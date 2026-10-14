@@ -1,9 +1,10 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
-};
+  poweredByHeader: false,
+  turbopack: { root: __dirname },
+}
 
-export default nextConfig;
+export default nextConfig
