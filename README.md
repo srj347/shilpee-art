@@ -51,7 +51,7 @@ npm run seed:sample -- --clear
 
 ```bash
 npm test            # unit tests (formatting, image sizes, selectors, spam checks)
-npm run typecheck
+npm run typecheck   # run before every push: the server build skips this check
 npm run lint
 npm run test:e2e    # needs the dev server running; uses your installed Google Chrome
 ```

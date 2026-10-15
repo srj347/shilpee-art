@@ -207,7 +207,7 @@ chmod 600 .env
 
 ```bash
 npm ci
-npm run build
+npm run build:server
 pm2 start deploy/ecosystem.config.cjs
 pm2 save
 pm2 startup          # prints one sudo command: copy it and run it
@@ -215,6 +215,9 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/
 ```
 
 The last line must print `200`.
+
+`build:server` skips the TypeScript check and gives Node.js more memory, so the build fits a small server.
+Types are checked on your computer before you push: `npm run typecheck`.
 
 ## Phase 5 — Caddy and HTTPS (10 minutes)
 
