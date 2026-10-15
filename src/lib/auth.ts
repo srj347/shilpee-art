@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers'
+import { unstable_rethrow } from 'next/navigation'
 import { connection } from 'next/server'
 import { env } from './env'
 import { readSessionValue, SESSION_COOKIE } from './session'
@@ -32,6 +33,7 @@ export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response
     try {
       return await fn(...args)
     } catch (err) {
+      unstable_rethrow(err) // let Next.js handle its own signals (prerender bail-out, redirects)
       if (err instanceof HttpError) {
         return Response.json({ error: err.message, ...err.extra }, { status: err.status })
       }

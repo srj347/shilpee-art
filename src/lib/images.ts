@@ -59,7 +59,8 @@ export async function processImage(
     .toBuffer()
   await putObject('public', `img/${id}/og.jpg`, og, 'image/jpeg')
 
-  const lqipBuf = await base.clone().resize({ width: 24, height: 24, fit: 'inside' }).webp({ quality: 40 }).toBuffer()
+  // No colour profile in the tiny preview: it would be most of its bytes.
+  const lqipBuf = await sharp(input, { failOn: 'none' }).autoOrient().toColourspace('srgb').resize({ width: 24, height: 24, fit: 'inside' }).webp({ quality: 40 }).toBuffer()
   const { dominant } = await sharp(input).stats()
   const hex = (n: number) => n.toString(16).padStart(2, '0')
 

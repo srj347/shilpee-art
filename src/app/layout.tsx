@@ -5,12 +5,14 @@ import { env } from '@/lib/env'
 import './globals.css'
 
 const sans = Schibsted_Grotesk({ variable: '--font-sans', subsets: ['latin'], display: 'swap' })
+// No optical-size axis: it more than doubles the font files. Not preloaded, so it never
+// competes with the first painting for bandwidth; Georgia shows until it arrives.
 const serif = Newsreader({
   variable: '--font-serif',
   subsets: ['latin'],
   style: ['normal', 'italic'],
-  axes: ['opsz'],
   display: 'swap',
+  preload: false,
 })
 
 export const metadata: Metadata = {

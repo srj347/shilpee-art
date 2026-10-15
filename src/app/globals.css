@@ -163,7 +163,7 @@ p { margin: 0; }
 /* Images */
 .art-img { position: relative; width: 100%; background-color: var(--mount); background-size: cover; overflow: hidden; }
 .art-img img { width: 100%; height: 100%; object-fit: contain; transition: opacity var(--t-slow) var(--ease-out); }
-.js .art-img img:not([data-loaded]) { opacity: 0; }
+.js .art-img img[data-fade]:not([data-loaded]) { opacity: 0; }
 .on-mount { background: var(--mount); padding: 7%; }
 .on-mount .art-img { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04); }
 .preview-tag { position: absolute; left: 10px; bottom: 10px; background: var(--wall); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 8px; }

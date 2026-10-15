@@ -48,6 +48,8 @@ export function ArtImage({ image, sizes, alt, priority, className, showPreviewTa
           fetchPriority={priority ? 'high' : undefined}
           decoding="async"
           draggable={false}
+          // Only images below the fold fade in; a priority image paints at once (it is the LCP).
+          data-fade={priority ? undefined : ''}
           onLoad={(e) => {
             e.currentTarget.dataset.loaded = ''
           }}
