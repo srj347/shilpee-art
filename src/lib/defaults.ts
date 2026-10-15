@@ -8,12 +8,12 @@ export const DEFAULT_SETTINGS: Settings = {
   cv: [],
   studioImages: [],
   contact: {
-    email: '',
-    whatsapp: '',
-    instagram: '',
+    email: 'maitrashilpee@gmail.com',
+    whatsapp: '919160113394',
+    instagram: 'https://www.instagram.com/shilpee.artist/',
     replyPromise: 'within two working days',
   },
-  notifyEmails: [],
+  notifyEmails: ['maitrashilpee@gmail.com'],
   defaults: {
     certificateNote: 'Signed certificate of authenticity with the work’s reference number.',
     shipsFrom: 'Hyderabad, India',

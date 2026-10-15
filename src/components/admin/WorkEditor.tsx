@@ -438,7 +438,7 @@ export function WorkEditor({ id, fromId }: { id?: string; fromId?: string }) {
               </div>
               <Field id="w-pack" label="Packing note" hint="Empty uses the default from Settings"><input id="w-pack" value={d.packaging} onChange={(e) => set('packaging', e.target.value)} /></Field>
               <Toggle label="Show first on Home (hero)" checked={d.isHero} onChange={(v) => set('isHero', v)} hint="Only one work at a time" />
-              <Field id="w-slug" label="Web address" hint={`shilpeemaitra.com/works/${d.slug || slugify(d.title) || '…'}`}>
+              <Field id="w-slug" label="Web address" hint={`/works/${d.slug || slugify(d.title) || '…'}`}>
                 <input id="w-slug" value={d.slug} placeholder={slugify(d.title)} onChange={(e) => set('slug', slugify(e.target.value))} />
               </Field>
               <Field id="w-seo" label="Search description" hint="Optional. About 150 characters for Google and link previews."><textarea id="w-seo" rows={2} maxLength={200} value={d.seoDescription} onChange={(e) => set('seoDescription', e.target.value)} /></Field>

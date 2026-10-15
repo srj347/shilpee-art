@@ -119,7 +119,7 @@ async function main() {
           { year: '2026', text: 'Sample entry: group show, Hyderabad' },
           { year: '2025', text: 'Sample entry: residency' },
         ],
-        contact: { email: 'studio@example.test', whatsapp: '910000000000', instagram: 'https://www.instagram.com/', replyPromise: 'within two working days' },
+        // Local outbox only: enquiry emails go to the test admin, not to Shilpee.
         notifyEmails: ['studio@example.test'],
       },
     })
