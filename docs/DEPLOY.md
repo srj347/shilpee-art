@@ -1,8 +1,11 @@
 # Deploy shilpeemaitra.com
 
 One Lightsail server runs the site behind Nginx and keeps the images on its own disk.
-MongoDB Atlas holds the data. Amazon SES sends email. One private S3 bucket holds the nightly backups.
-DNS stays at Spaceship. Running cost: about $13 (₹1,200) a month.
+MongoDB Atlas holds the data. Amazon SES sends email. DNS stays at Spaceship.
+Running cost: about $12–13 (₹1,150) a month.
+
+Backups: for now only Lightsail's automatic snapshots (7 days). The nightly database and image backup to S3
+is ready to turn on later; see "Later: nightly backups to S3".
 
 Images can move to S3 + CloudFront later without code changes; see "Later: images on S3 and CloudFront" at the end.
 
@@ -14,7 +17,6 @@ Images can move to S3 + CloudFront later without code changes; see "Later: image
 | Server | Lightsail, Ubuntu 24.04, 2 GB plan, region **Mumbai** (closest to visitors in India) |
 | Image folder on the server | `/srv/shilpee-media` (served by Nginx at `/media/img/…`) |
 | Email | Amazon SES, region **Sydney** (`ap-southeast-2`), sending from `studio@shilpeemaitra.com` |
-| Backup bucket | the private S3 bucket you created, for example `shilpeemaitra-media-private-<account>-ap-southeast-2-an` — use its **exact** name from the S3 list |
 | Database | Atlas cluster `shilpee-art-cluster`, user `ops_db_user`, database `shilpee` |
 | Repository | `github.com/srj347/shilpee-art` |
 
@@ -34,58 +36,27 @@ Status on 15 October 2026: domain bought, SES domain records added and resolving
    - Done when the yellow "sandbox" banner is gone.
 4. Leave **engagement tracking** (open and click tracking) off. It rewrites links, including the one-time sign-in link.
 
-## Phase 2 — Backup bucket and the app's AWS user (15 minutes)
+## Phase 2 — The app's AWS user, for email (10 minutes)
 
-### 2.1 Private bucket for backups
+Lightsail servers cannot use IAM roles, so the app sends email with the keys of a user that can only send email.
 
-You already created it. Check in **S3**:
-
-1. **Block all public access** is on, **Bucket Versioning** is on.
-2. **Management → Lifecycle rules** has `delete-old-backups`: prefix `backups/`, expire current versions after **30** days, delete noncurrent versions after **1** day.
-   (The image copy goes to `media/` and is kept.)
-3. Copy the bucket's exact name.
-
-The public bucket is not needed now. You can keep it, empty, for the later move to CloudFront.
-
-### 2.2 IAM user `shilpee-app`
-
-Lightsail servers cannot use IAM roles, so the app and the backup script use the keys of a user that can do only this:
-
-1. **IAM → Policies → Create policy → JSON**. Paste, with your exact bucket name in both places:
+1. **IAM → Policies → Create policy → JSON**. Paste:
 
    ```json
    {
      "Version": "2012-10-17",
      "Statement": [
-       {
-         "Sid": "BackupWrite",
-         "Effect": "Allow",
-         "Action": ["s3:PutObject"],
-         "Resource": "arn:aws:s3:::<private-bucket-name>/*"
-       },
-       {
-         "Sid": "BackupList",
-         "Effect": "Allow",
-         "Action": ["s3:ListBucket"],
-         "Resource": "arn:aws:s3:::<private-bucket-name>"
-       },
-       {
-         "Sid": "Email",
-         "Effect": "Allow",
-         "Action": ["ses:SendEmail", "ses:SendRawEmail"],
-         "Resource": "*"
-       }
+       { "Sid": "Email", "Effect": "Allow", "Action": ["ses:SendEmail", "ses:SendRawEmail"], "Resource": "*" }
      ]
    }
    ```
 
-   (`ListBucket` lets the nightly image copy skip files that are already backed up.)
 2. Name it `shilpee-app` → **Create policy**.
 3. **Users → Create user** `shilpee-app`, no console access → **Attach policies directly** → `shilpee-app` → **Create user**.
 4. User → **Security credentials → Create access key → Application running outside AWS**.
    Save the **Access key ID** and **Secret access key** in your password manager (the secret is shown once).
 
-You can close the CloudFront support case, or keep it for later.
+The S3 buckets and the CloudFront distribution are not used. You can delete them, or leave them empty.
 
 ## Phase 3 — The server (45 minutes)
 
@@ -144,19 +115,12 @@ chmod 755 /srv/shilpee-media /srv/shilpee-media/public
 chmod 700 /srv/shilpee-media/private
 ```
 
-Backup tools:
-
-```bash
-sudo snap install aws-cli --classic
-```
-
-MongoDB tools (`mongodump` for backups, `mongosh` for tests) from MongoDB's own package repository:
+`mongosh`, to test the database connection, from MongoDB's own package repository:
 
 ```bash
 curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
 echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
-sudo apt update && sudo apt install -y mongodb-database-tools mongodb-mongosh
-mongodump --version && mongosh --version
+sudo apt update && sudo apt install -y mongodb-mongosh
 ```
 
 Test the database connection (use the real password):
@@ -207,11 +171,10 @@ ADMIN_EMAILS=maitrashilpee@gmail.com,<your email>
 STORAGE_DRIVER=local
 STORAGE_DIR=/srv/shilpee-media
 NEXT_PUBLIC_MEDIA_BASE_URL=/media
-S3_REGION=ap-southeast-2
 S3_PUBLIC_BUCKET=
-S3_PRIVATE_BUCKET=<exact private bucket name>
-AWS_ACCESS_KEY_ID=<from step 2.2>
-AWS_SECRET_ACCESS_KEY=<from step 2.2>
+S3_PRIVATE_BUCKET=
+AWS_ACCESS_KEY_ID=<from Phase 2>
+AWS_SECRET_ACCESS_KEY=<from Phase 2>
 
 MAIL_DRIVER=ses
 MAIL_FROM="Shilpee Maitra <studio@shilpeemaitra.com>"
@@ -221,7 +184,7 @@ NEXT_PUBLIC_UMAMI_WEBSITE_ID=
 ```
 
 - Remove the `#` in front of the two `AWS_` lines.
-- `S3_REGION` is the **bucket's** region (Sydney here); `SES_REGION` is where SES is set up.
+- `SES_REGION` is where SES is set up (Sydney). The `S3_` settings stay empty: images are on the server's disk.
 - If the database password contains `@ : / ? # [ ] %`, write it URL-encoded (for example `@` → `%40`).
 
 ```bash
@@ -261,25 +224,24 @@ Open `https://shilpeemaitra.com`. It shows the site with no works yet.
 
 When the site works, raise the TTL of the two A records in Spaceship to 60 min.
 
-## Phase 6 — Jobs and monitoring (15 minutes)
+## Phase 6 — Email retry job and monitoring (10 minutes)
 
-1. `crontab -e`, paste the two lines from `deploy/crontab.txt`, save.
-2. Test the backup once:
+1. `crontab -e` (choose `nano` if asked). Paste this one line at the end, save and exit:
 
-   ```bash
-   ./deploy/backup.sh
-   aws s3 ls "s3://<private bucket>/backups/mongo/" --region ap-southeast-2
+   ```
+   */10 * * * * curl -s -X POST -H "Authorization: Bearer $(grep ^CRON_SECRET= /home/ubuntu/shilpee-art/.env | cut -d= -f2)" http://127.0.0.1:3000/api/cron/mail-retry > /dev/null
    ```
 
-   It prints `backup ok` and lists one file.
-3. Test the email retry job:
+   It resends enquiry emails that failed, every 10 minutes. (Leave out the backup line in `deploy/crontab.txt` for now.)
+2. Test it:
 
    ```bash
+   cd /home/ubuntu/shilpee-art
    curl -s -X POST -H "Authorization: Bearer $(grep ^CRON_SECRET= .env | cut -d= -f2)" http://127.0.0.1:3000/api/cron/mail-retry
    ```
 
    Answer: `{"tried":0}`.
-4. UptimeRobot (free): HTTP(s) monitor for `https://shilpeemaitra.com`, every 5 minutes, email alerts.
+3. UptimeRobot (free): HTTP(s) monitor for `https://shilpeemaitra.com`, every 5 minutes, email alerts.
 
 ## Phase 7 — Checks before you share the link
 
@@ -315,7 +277,6 @@ Images in `/srv/shilpee-media` are outside the code folder, so updates never tou
 | Public image sizes | `/srv/shilpee-media/public/img/<id>/` |
 | Full-size originals | `/srv/shilpee-media/private/masters/` |
 | App logs | `pm2 logs shilpee` |
-| Backup log | `/home/ubuntu/backup.log` |
 
 ## If something goes wrong
 
@@ -326,25 +287,47 @@ Images in `/srv/shilpee-media` are outside the code folder, so updates never tou
 | Photo upload fails | `pm2 logs shilpee`; `ls -ld /srv/shilpee-media/*` (owner `ubuntu`); `STORAGE_DIR` in `.env` |
 | Photos upload but do not show | `sudo nginx -t`; the `/media/img/` block in `/etc/nginx/sites-available/shilpee`; `chmod 755 /srv/shilpee-media /srv/shilpee-media/public` |
 | No emails | SES identity verified and out of the sandbox; `MAIL_DRIVER=ses`, `SES_REGION=ap-southeast-2`; Studio → Enquiries shows "did not send yet" |
-| Backup fails | `tail /home/ubuntu/backup.log`; bucket name and region in `.env`; IAM policy |
 | Disk filling up | `df -h /`. The 2 GB plan has 60 GB; thousands of photos fit |
 
 ## Restore
 
-Database:
+Restore the whole server from a Lightsail snapshot: **Lightsail → Snapshots → ⋮ → Create new instance**, then attach the static IP to the new instance. A snapshot holds the code, `.env` and the images; the database is in Atlas.
+
+A deleted work is not erased: it has `deletedAt` set. Unset it in the database to bring the work back.
+
+---
+
+## Later: nightly backups to S3
+
+Turn this on before Shilpee adds many works: the free Atlas M0 cluster has no automatic backups.
+
+1. Create a private S3 bucket (block all public access, versioning on). Add a lifecycle rule: prefix `backups/`, expire current versions after 30 days, delete noncurrent versions after 1 day.
+2. Add to the IAM policy (with the exact bucket name):
+
+   ```json
+   { "Sid": "BackupWrite", "Effect": "Allow", "Action": ["s3:PutObject"], "Resource": "arn:aws:s3:::<bucket>/*" },
+   { "Sid": "BackupList",  "Effect": "Allow", "Action": ["s3:ListBucket"], "Resource": "arn:aws:s3:::<bucket>" }
+   ```
+
+3. On the server: install the tools, then set the bucket in `.env`:
+
+   ```bash
+   sudo snap install aws-cli --classic
+   sudo apt install -y mongodb-database-tools
+   nano .env     # S3_PRIVATE_BUCKET=<bucket>, S3_REGION=<bucket region>
+   ./deploy/backup.sh && echo OK
+   ```
+
+4. `crontab -e` and add the backup line from `deploy/crontab.txt` (every night at 03:00).
+
+Restore the database from a backup:
 
 ```bash
-aws s3 cp "s3://<private bucket>/backups/mongo/<file>.archive.gz" /tmp/restore.gz --region ap-southeast-2
+aws s3 cp "s3://<bucket>/backups/mongo/<file>.archive.gz" /tmp/restore.gz --region <bucket region>
 mongorestore --uri="$MONGODB_URI" --archive=/tmp/restore.gz --gzip --drop
 ```
 
-Images (from the S3 copy):
-
-```bash
-aws s3 sync "s3://<private bucket>/media/" /srv/shilpee-media/ --region ap-southeast-2
-```
-
-Or restore the whole server from a Lightsail snapshot. A deleted work is not erased: it has `deletedAt` set; unset it to bring the work back.
+Restore the images: `aws s3 sync "s3://<bucket>/media/" /srv/shilpee-media/ --region <bucket region>`.
 
 ---
 
@@ -353,7 +336,7 @@ Or restore the whole server from a Lightsail snapshot. A deleted work is not era
 Do this only when AWS Support has enabled CloudFront, if you want faster images abroad.
 
 1. Create the CloudFront distribution for the public bucket (Origin Access Control), add `img.shilpeemaitra.com` with its certificate, and add the `img` CNAME in Spaceship.
-2. Add `s3:PutObject` on the public bucket to the IAM policy.
+2. Add `s3:PutObject` on the public and private buckets to the IAM policy, and set `S3_REGION` to the buckets' region in `.env`.
 3. In `.env`, set `S3_PUBLIC_BUCKET=<exact public bucket name>`. Then copy the images:
 
    ```bash
