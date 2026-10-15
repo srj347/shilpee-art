@@ -1,0 +1,10 @@
+{
+  "name": "Studio · Shilpee Maitra",
+  "short_name": "Studio",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#fbfbf9",
+  "theme_color": "#fbfbf9",
+  "icons": [{ "src": "/studio-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

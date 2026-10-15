@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed:sample": "tsx --env-file=.env.local scripts/seed-sample.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "node tests/e2e/studio.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
@@ -27,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.1",
+    "playwright-core": "^1.64.1",
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.4"
