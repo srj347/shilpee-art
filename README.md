@@ -5,7 +5,8 @@ Visitors enquire about a work; nothing is sold through a checkout.
 
 - Public site: Home, Works, Upcoming, Prints, work pages, About, Contact, Privacy
 - Studio (`/admin`): works, photos, prints, enquiries, settings
-- Stack: Next.js 16 (App Router, Cache Components), MongoDB, sharp, S3 + CloudFront, Amazon SES
+- Stack: Next.js 16 (App Router, Cache Components), MongoDB, sharp, Amazon SES. Images live on the server's disk
+  (served by Nginx); S3 + CloudFront is supported by configuration only (`STORAGE_DRIVER=s3`)
 - Plan and design system: the "Shilpee Maitra Site Plan" artifact
 
 ## Run it on your computer
@@ -69,6 +70,7 @@ Set `BASE=http://localhost:3100` to run them against `next start` on another por
 | Cached reads for the site | `src/lib/data.ts` (`'use cache'`, tags `artworks` and `settings`) |
 | Studio writes | `src/lib/studio.ts` — every write refreshes the public pages at once |
 | Image pipeline | `src/lib/images.ts` — sRGB, no GPS, AVIF + WebP sizes, blur preview, 1200×630 social image |
+| Image storage | `src/lib/storage.ts` — `local` (disk, `STORAGE_DIR`) or `s3`; `deploy/media-to-s3.sh` moves disk → S3 |
 | Enquiries and email | `src/lib/enquiries.ts`, `src/lib/mail.ts`, `src/lib/mail-templates.ts` |
 | Design tokens | top of `src/app/globals.css` |
 | Gestures | `src/components/art/Viewer.tsx` (swipe, pinch, double-tap, pan, drag down), `EnquirySheet.tsx` (drag down) |

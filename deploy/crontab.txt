@@ -1,5 +1,5 @@
-# crontab -e   (as the ubuntu user). Times are UTC.
+# crontab -e   (as the ubuntu user). Times are the server's time zone (Asia/Kolkata, set in the guide).
 # Retry enquiry emails that failed, every 10 minutes.
 */10 * * * * curl -s -X POST -H "Authorization: Bearer $(grep ^CRON_SECRET= /home/ubuntu/shilpee-art/.env | cut -d= -f2)" http://127.0.0.1:3000/api/cron/mail-retry > /dev/null
-# Database backup every night at 21:30 UTC (03:00 in India).
-30 21 * * * /home/ubuntu/shilpee-art/deploy/backup.sh >> /home/ubuntu/backup.log 2>&1
+# Database and image backup every night at 03:00.
+0 3 * * * /home/ubuntu/shilpee-art/deploy/backup.sh >> /home/ubuntu/backup.log 2>&1
