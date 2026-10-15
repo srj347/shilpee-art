@@ -38,7 +38,7 @@ try {
   const toVisitor = mails.find((m) => /^To: ananya@example.com$/m.test(m))
   check('artist email sent with Reply-To the visitor', !!toArtist && toArtist.includes('Reply-To: ananya@example.com'))
   check('artist email has the work, price and WhatsApp link', !!toArtist && toArtist.includes('₹1,80,000') && toArtist.includes('wa.me/919848012345'))
-  check('visitor auto-reply sent', !!toVisitor && toVisitor.includes('Thank you for asking about Monsoon Grey'))
+  check('visitor auto-reply sent, replies go to the artist', !!toVisitor && toVisitor.includes('Thank you for asking about Monsoon Grey') && toVisitor.includes('Reply-To: maitrashilpee@gmail.com'))
   await sheet.locator('.sheet-close').click()
   await sheet.waitFor({ state: 'detached' })
   check('sheet closes', true)

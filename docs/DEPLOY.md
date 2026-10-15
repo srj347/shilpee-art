@@ -3,11 +3,25 @@
 Target: one Lightsail instance runs Next.js behind Nginx. MongoDB Atlas holds the data.
 Images go to an S3 bucket behind CloudFront. Amazon SES sends email. About $14 (₹1,250) a month.
 
-Do the steps in this order. Steps 1 and 4 take time on AWS's side, so start them first.
+Do the steps in this order. Step 1 includes requests that take time on AWS's side, so start it first.
+
+## 0. Code on GitHub
+
+The server pulls the code from GitHub (`deploy/deploy.sh` runs `git pull`).
+
+1. Create a **private** repository, for example `shilpee-art`.
+2. Push the code:
+
+   ```bash
+   git remote add origin git@github.com:<you>/shilpee-art.git
+   git push -u origin main
+   ```
+
+3. On the server (step 4), add a read-only deploy key to the repository so the server can clone it.
 
 ## 1. Accounts and requests to start early
 
-1. Buy the domain (for example `shilpeemaitra.com`).
+1. Buy the domain. `shilpeemaitra.com` and `shilpeemaitra.art` were both free on 15 October 2026.
 2. Amazon SES, region **ap-south-1 (Mumbai)**:
    1. Create a domain identity for the domain. Add the DKIM CNAME records it shows.
    2. Add an SPF record: `v=spf1 include:amazonses.com ~all`.
@@ -64,7 +78,7 @@ Fill in `.env`:
 | `SITE_URL` | `https://shilpeemaitra.com` |
 | `MONGODB_URI` | the Atlas connection string, database name `shilpee` |
 | `SESSION_SECRET`, `FORM_SECRET`, `CRON_SECRET` | each `openssl rand -hex 32` |
-| `ADMIN_EMAILS` | Shilpee's email and yours |
+| `ADMIN_EMAILS` | `maitrashilpee@gmail.com` and your own email |
 | `STORAGE_DRIVER` | `s3` |
 | `NEXT_PUBLIC_MEDIA_BASE_URL` | `https://img.shilpeemaitra.com` |
 | `S3_PUBLIC_BUCKET`, `S3_PRIVATE_BUCKET`, `S3_REGION` | the two buckets, `ap-south-1` |

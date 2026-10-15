@@ -133,7 +133,8 @@ export async function sendEnquiryMails(e: any): Promise<void> {
   }
   if (next.toVisitor !== 'sent') {
     try {
-      await sendMail(enquiryToVisitor(data))
+      // A reply to the thank-you email reaches the artist, not the no-inbox sending address.
+      await sendMail({ ...enquiryToVisitor(data), replyTo: settings.contact.email || recipients[0] })
       next.toVisitor = 'sent'
     } catch (err) {
       next.toVisitor = 'failed'
