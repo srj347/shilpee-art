@@ -150,17 +150,19 @@ Backup tools:
 sudo snap install aws-cli --classic
 ```
 
-Download **MongoDB Database Tools** for **Ubuntu 24.04 x86_64** (`.deb`) from mongodb.com/try/download/database-tools, copy it to the server, then:
+MongoDB tools (`mongodump` for backups, `mongosh` for tests) from MongoDB's own package repository:
 
 ```bash
-sudo apt install -y ./mongodb-database-tools-*.deb
-mongodump --version
+curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+sudo apt update && sudo apt install -y mongodb-database-tools mongodb-mongosh
+mongodump --version && mongosh --version
 ```
 
 Test the database connection (use the real password):
 
 ```bash
-npx -y mongosh "mongodb+srv://ops_db_user:<password>@shilpee-art-cluster.lquynpx.mongodb.net/shilpee" --eval 'db.runCommand({ping:1})'
+mongosh "mongodb+srv://ops_db_user:<password>@shilpee-art-cluster.lquynpx.mongodb.net/shilpee" --eval 'db.runCommand({ping:1})'
 ```
 
 It must print `ok: 1`. If it hangs, check step 3.3.
