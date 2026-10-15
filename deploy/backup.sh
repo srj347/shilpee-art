@@ -7,6 +7,6 @@ set -a; source .env; set +a
 stamp=$(date -u +%Y-%m-%dT%H%MZ)
 file="/tmp/shilpee-$stamp.archive.gz"
 mongodump --uri="$MONGODB_URI" --archive="$file" --gzip --quiet
-aws s3 cp "$file" "s3://$S3_PRIVATE_BUCKET/backups/mongo/$stamp.archive.gz" --only-show-errors
+aws s3 cp "$file" "s3://$S3_PRIVATE_BUCKET/backups/mongo/$stamp.archive.gz" --region "${S3_REGION:-ap-south-1}" --only-show-errors
 rm -f "$file"
 # Keep 30 days: set a lifecycle rule on backups/ in the bucket (see docs/DEPLOY.md).
