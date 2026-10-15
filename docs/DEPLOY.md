@@ -1,6 +1,6 @@
 # Deploy shilpeemaitra.com
 
-One Lightsail server runs the site behind Nginx and keeps the images on its own disk.
+One Lightsail server runs the site behind Caddy (which also handles HTTPS by itself) and keeps the images on its own disk.
 MongoDB Atlas holds the data. Amazon SES sends email. DNS stays at Spaceship.
 Running cost: about $12–13 (₹1,150) a month.
 
@@ -15,7 +15,7 @@ Images can move to S3 + CloudFront later without code changes; see "Later: image
 | --- | --- |
 | Domain | `shilpeemaitra.com` (DNS at Spaceship) |
 | Server | Lightsail, Ubuntu 24.04, 2 GB plan, region **Mumbai** (closest to visitors in India) |
-| Image folder on the server | `/srv/shilpee-media` (served by Nginx at `/media/img/…`) |
+| Image folder on the server | `/srv/shilpee-media` (served by Caddy at `/media/img/…`) |
 | Email | Amazon SES, region **Sydney** (`ap-southeast-2`), sending from `studio@shilpeemaitra.com` |
 | Database | Atlas cluster `shilpee-art-cluster`, user `ops_db_user`, database `shilpee` |
 | Repository | `github.com/srj347/shilpee-art` |
@@ -89,8 +89,18 @@ Connect: Lightsail → instance → **Connect using SSH**. Run one block at a ti
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y nginx git certbot python3-certbot-nginx unzip
+sudo apt install -y git unzip debian-keyring debian-archive-keyring apt-transport-https curl
 sudo timedatectl set-timezone Asia/Kolkata
+```
+
+Caddy, the web server in front of the app (it gets and renews HTTPS certificates by itself):
+
+```bash
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update && sudo apt install -y caddy
+caddy version
 ```
 
 ```bash
@@ -106,7 +116,7 @@ sudo mkswap /swapfile && sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-The image folder (Nginx reads `public`; only the app reads `private`):
+The image folder (Caddy reads `public`; only the app reads `private`):
 
 ```bash
 sudo mkdir -p /srv/shilpee-media/public /srv/shilpee-media/private
@@ -206,21 +216,29 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/
 
 The last line must print `200`.
 
-## Phase 5 — Nginx and HTTPS (15 minutes)
+## Phase 5 — Caddy and HTTPS (10 minutes)
 
-On your Mac, `dig +short shilpeemaitra.com` must print the static IP first. Then on the server:
+On your Mac, `dig +short shilpeemaitra.com` and `dig +short www.shilpeemaitra.com` must both print the static IP first.
+(Caddy asks Let's Encrypt for the certificates as soon as it starts; that only works when the domain already points here.)
+
+Then on the server:
 
 ```bash
 cd /home/ubuntu/shilpee-art
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/shilpee
-sudo ln -s /etc/nginx/sites-available/shilpee /etc/nginx/sites-enabled/shilpee
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d shilpeemaitra.com -d www.shilpeemaitra.com --redirect -m <your email> --agree-tos -n
-sudo certbot renew --dry-run
+sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
 ```
 
-Open `https://shilpeemaitra.com`. It shows the site with no works yet.
+`caddy validate` must end with `Valid configuration`. Wait about a minute, then check the certificate:
+
+```bash
+sudo journalctl -u caddy --since "5 min ago" | grep -i "certificate obtained"
+curl -sI https://shilpeemaitra.com | head -1
+```
+
+The `curl` line must print `HTTP/2 200`. Open `https://shilpeemaitra.com`: it shows the site with no works yet.
+`http://` and `www.` addresses redirect to `https://shilpeemaitra.com` by themselves. Renewals are automatic; there is nothing to schedule.
 
 When the site works, raise the TTL of the two A records in Spaceship to 60 min.
 
@@ -282,10 +300,11 @@ Images in `/srv/shilpee-media` are outside the code folder, so updates never tou
 
 | Problem | Check |
 | --- | --- |
-| Site down | `pm2 status`, `pm2 logs shilpee --lines 100`, `sudo systemctl status nginx` |
+| Site down | `pm2 status`, `pm2 logs shilpee --lines 100`, `sudo systemctl status caddy` |
+| No HTTPS / certificate error | `sudo journalctl -u caddy -n 100`; both A records point to the static IP; ports 80 and 443 open in the Lightsail firewall |
 | Build fails with a database error | Atlas Network Access has the static IP; `MONGODB_URI` and the password encoding |
 | Photo upload fails | `pm2 logs shilpee`; `ls -ld /srv/shilpee-media/*` (owner `ubuntu`); `STORAGE_DIR` in `.env` |
-| Photos upload but do not show | `sudo nginx -t`; the `/media/img/` block in `/etc/nginx/sites-available/shilpee`; `chmod 755 /srv/shilpee-media /srv/shilpee-media/public` |
+| Photos upload but do not show | `sudo caddy validate --config /etc/caddy/Caddyfile`; the `/media/img/` block in `/etc/caddy/Caddyfile`; `chmod 755 /srv/shilpee-media /srv/shilpee-media/public` |
 | No emails | SES identity verified and out of the sandbox; `MAIL_DRIVER=ses`, `SES_REGION=ap-southeast-2`; Studio → Enquiries shows "did not send yet" |
 | Disk filling up | `df -h /`. The 2 GB plan has 60 GB; thousands of photos fit |
 

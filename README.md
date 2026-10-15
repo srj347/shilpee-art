@@ -6,7 +6,7 @@ Visitors enquire about a work; nothing is sold through a checkout.
 - Public site: Home, Works, Upcoming, Prints, work pages, About, Contact, Privacy
 - Studio (`/admin`): works, photos, prints, enquiries, settings
 - Stack: Next.js 16 (App Router, Cache Components), MongoDB, sharp, Amazon SES. Images live on the server's disk
-  (served by Nginx); S3 + CloudFront is supported by configuration only (`STORAGE_DRIVER=s3`)
+  (served by Caddy, which also handles HTTPS); S3 + CloudFront is supported by configuration only (`STORAGE_DRIVER=s3`)
 - Plan and design system: the "Shilpee Maitra Site Plan" artifact
 
 ## Run it on your computer

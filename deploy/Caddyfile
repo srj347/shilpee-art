@@ -1,0 +1,38 @@
+# /etc/caddy/Caddyfile — the web server in front of the app.
+# Caddy gets and renews the HTTPS certificates by itself once the domain points at this server,
+# and redirects http:// to https://. After editing: sudo systemctl reload caddy
+
+www.shilpeemaitra.com {
+	redir https://shilpeemaitra.com{uri} permanent
+}
+
+shilpeemaitra.com {
+	encode zstd gzip
+
+	# Photos are uploaded through here (up to 30 MB each).
+	request_body {
+		max_size 32MB
+	}
+
+	# Images, straight from disk (STORAGE_DRIVER=local, STORAGE_DIR=/srv/shilpee-media).
+	# Only the public sizes are served; the originals in /srv/shilpee-media/private never are.
+	# File names never change once written, so browsers may keep them for a year.
+	handle_path /media/img/* {
+		root * /srv/shilpee-media/public/img
+		@found file
+		header @found Cache-Control "public, max-age=31536000, immutable"
+		header X-Content-Type-Options nosniff
+		file_server
+	}
+
+	# Anything else under /media is not a public file.
+	handle /media/* {
+		respond 404
+	}
+
+	# Everything else goes to the Next.js app (PM2, port 3000).
+	# Caddy passes the original host and the visitor's IP (X-Forwarded-Host, X-Forwarded-For) to the app.
+	handle {
+		reverse_proxy 127.0.0.1:3000
+	}
+}
