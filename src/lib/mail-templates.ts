@@ -1,4 +1,5 @@
 // Plain, readable emails. Every value from a visitor is escaped.
+import { formatPhone } from './format'
 import type { Mail } from './mail'
 
 export function esc(s: string): string {
@@ -101,7 +102,7 @@ export function enquiryToVisitor(d: EnquiryMailData): Mail {
   const summary = d.work
     ? `${d.work.title}, ${d.work.year} · ${d.print ? `Print · ${d.print.label}` : TYPE_LABEL[d.type] === 'original' ? 'Original' : d.work.status} · ${d.work.size}`
     : ''
-  const wa = d.artistWhatsapp ? `+${d.artistWhatsapp.replace(/\D/g, '')}` : ''
+  const wa = d.artistWhatsapp ? formatPhone(d.artistWhatsapp) : ''
   const text = [
     `Dear ${first},`,
     '',

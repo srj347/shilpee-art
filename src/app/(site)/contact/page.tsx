@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { ContactForm } from '@/components/enquiry/ContactForm'
 import { CopyButton } from '@/components/site/CopyButton'
 import { getSettings } from '@/lib/data'
+import { formatPhone } from '@/lib/format'
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -33,7 +34,7 @@ export default async function ContactPage() {
               {wa ? (
                 <li>
                   <span className="k">WhatsApp</span>
-                  <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">+{wa.replace(/^(\d{2})(\d{5})(\d+)$/, '$1 $2 $3')}</a>
+                  <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">{formatPhone(wa)}</a>
                 </li>
               ) : null}
               {s.contact.instagram ? (

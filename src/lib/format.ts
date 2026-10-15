@@ -96,3 +96,11 @@ export function mediumTagLabel(tag: string): string {
     { acrylic: 'Acrylic', watercolour: 'Watercolour', 'mixed-media': 'Mixed media', ink: 'Ink' }[tag] ?? tag
   )
 }
+
+/** "919848012345" → "+91 98480 12345". Other numbers keep their digits after a plus sign. */
+export function formatPhone(digitsOrText: string): string {
+  const d = digitsOrText.replace(/\D/g, '')
+  if (d.length === 12 && d.startsWith('91')) return `+91 ${d.slice(2, 7)} ${d.slice(7)}`
+  if (d.length === 10) return `+91 ${d.slice(0, 5)} ${d.slice(5)}`
+  return d ? `+${d}` : ''
+}

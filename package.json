@@ -10,7 +10,7 @@
     "seed:sample": "tsx --env-file=.env.local scripts/seed-sample.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "node tests/e2e/studio.mjs"
+    "test:e2e": "node tests/e2e/studio.mjs && node tests/e2e/enquiry.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",

@@ -1,30 +1,9 @@
 // Studio end to end: sign in, add a work with a photo, publish, quick actions, reorder, delete.
 // Needs: dev server with MAIL_DRIVER=console, ADMIN_EMAILS containing studio@example.test.
-import { readdir, readFile } from 'node:fs/promises'
-import path from 'node:path'
 import sharp from 'sharp'
-import { BASE, check, done, launch } from './harness.mjs'
+import { BASE, check, done, launch, signIn } from './harness.mjs'
 
-const OUTBOX = path.resolve('storage/outbox')
-const EMAIL = 'studio@example.test'
 const TITLE = `E2E Study ${Date.now().toString(36)}`
-
-async function latestLink() {
-  const files = (await readdir(OUTBOX)).filter((f) => f.endsWith('.txt')).sort()
-  const text = await readFile(path.join(OUTBOX, files.at(-1)), 'utf8')
-  return text.match(/https?:\/\/\S+\/api\/auth\/verify\?token=[\w-]+/)?.[0]
-}
-
-export async function signIn(page) {
-  await page.goto(`${BASE}/admin`)
-  await page.waitForURL(/\/admin\/sign-in/)
-  await page.fill('#si-email', EMAIL)
-  await page.click('button[type=submit]')
-  await page.getByText('Check your email').waitFor()
-  const link = await latestLink()
-  await page.goto(link)
-  await page.waitForURL(`${BASE}/admin`)
-}
 
 const { browser, page, errors } = await launch({ mobile: true })
 try {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cmToIn, editionLine, formatInr, monthLabel, printsFrom, sizeTier, slugify } from '@/lib/format'
+import { cmToIn, editionLine, formatInr, formatPhone, monthLabel, printsFrom, sizeTier, slugify } from '@/lib/format'
 import { variantSizes } from '@/lib/media'
 import { featuredWorks, filterWorks, heroWork, relatedWorks } from '@/lib/selectors'
 import { checkFormToken, countLinks, issueFormToken, resetRates, takeRate } from '@/lib/spam'
@@ -49,6 +49,12 @@ describe('format', () => {
     expect(sizeTier(50, 50)).toBe('small')
     expect(sizeTier(76, 102)).toBe('large')
     expect(sizeTier(90, 60)).toBe('medium')
+  })
+  it('groups Indian phone numbers', () => {
+    expect(formatPhone('919848012345')).toBe('+91 98480 12345')
+    expect(formatPhone('98480 12345')).toBe('+91 98480 12345')
+    expect(formatPhone('+44 20 7946 0000')).toBe('+442079460000')
+    expect(formatPhone('')).toBe('')
   })
   it('reads expected months', () => {
     expect(monthLabel('2026-12')).toBe('December 2026')
