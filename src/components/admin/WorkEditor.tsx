@@ -56,7 +56,7 @@ function Toggle({ label, checked, onChange, hint }: { label: string; checked: bo
   )
 }
 
-export function WorkEditor({ id, fromId }: { id?: string; fromId?: string }) {
+export function WorkEditor({ id, fromId, onCreated }: { id?: string; fromId?: string; onCreated?: () => void }) {
   const router = useRouter()
   const { toast } = useStudio()
   const [draft, setDraft] = useState<Draft | null>(() => (id || fromId ? null : emptyDraft(new Date().getFullYear())))
@@ -170,8 +170,10 @@ export function WorkEditor({ id, fromId }: { id?: string; fromId?: string }) {
       } catch {}
       const a = res.artwork
       toast(publish ? `${a.title} is on the website` : `${a.title} saved as a draft`)
-      if (!id) router.replace(`/admin/works/${a.id}`)
-      else {
+      if (!id) {
+        onCreated?.()
+        router.replace(`/admin/works/${a.id}`)
+      } else {
         setSaved(a)
         setDraft(toDraft(a))
       }
