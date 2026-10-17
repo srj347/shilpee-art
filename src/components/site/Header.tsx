@@ -12,7 +12,7 @@ const LINKS = [
   { href: '/contact', label: 'Contact' },
 ]
 
-type Contact = { email: string; whatsapp: string; instagram: string }
+type Contact = { email: string; instagram: string }
 
 function isActive(pathname: string | null, href: string) {
   return !!pathname && (pathname === href || pathname.startsWith(`${href}/`))
@@ -84,8 +84,6 @@ export function Header({ name, contact }: { name: string; contact: Contact }) {
     }
   }, [open])
 
-  const wa = contact.whatsapp ? `https://wa.me/${contact.whatsapp.replace(/\D/g, '')}` : ''
-
   return (
     <>
       <header className={`site-header${hidden && !open ? ' is-hidden' : ''}`}>
@@ -148,7 +146,6 @@ export function Header({ name, contact }: { name: string; contact: Contact }) {
           </ul>
           <div className="menu-contact">
             {contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : null}
-            {wa ? <a href={wa} target="_blank" rel="noopener">WhatsApp</a> : null}
             {contact.instagram ? <a href={contact.instagram} target="_blank" rel="noopener">Instagram</a> : null}
           </div>
         </div>

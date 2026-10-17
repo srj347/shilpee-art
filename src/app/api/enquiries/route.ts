@@ -29,7 +29,7 @@ export const POST = handle(async (req: Request) => {
 
   const ip = clientIp(req)
   if (!takeRate(`enq-ip:${ip}`, 5 * SCALE, HOUR) || !takeRate(`enq-email:${input.email.toLowerCase()}`, 20 * SCALE, 24 * HOUR)) {
-    throw new HttpError(429, 'You have sent several messages in a short time. Wait an hour, or write on WhatsApp.')
+    throw new HttpError(429, 'You have sent several messages in a short time. Wait an hour, or write on Instagram.')
   }
   if (countLinks(input.message) > 2) {
     throw new HttpError(400, 'Remove some links from the message (two at most).', {

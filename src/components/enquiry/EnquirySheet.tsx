@@ -6,8 +6,6 @@ import {
   defaultMessage,
   sheetTitle,
   track,
-  whatsappLink,
-  whatsappText,
   type EnquiryRequest,
 } from '@/lib/enquiry-client'
 import type { SheetContact } from './EnquiryProvider'
@@ -291,8 +289,7 @@ export function EnquirySheet({
     setFields((f) => ({ ...f, name: '', email: '', phone: '' }))
   }
 
-  const pageUrl = location.href
-  const wa = contact.whatsapp ? whatsappLink(contact.whatsapp, whatsappText(req, pageUrl, firstName)) : ''
+  const ig = contact.instagram
   const first = fields.name.trim().split(/\s+/)[0]
   const state = open ? 'is-open' : 'is-closing'
 
@@ -343,9 +340,9 @@ export function EnquirySheet({
                 A copy is on its way to {fields.email.trim()}.{sentRef ? ` Your reference is ${sentRef}.` : ''}
               </p>
               <div className="link-row">
-                {wa ? (
-                  <a className="textlink" href={wa} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { from: 'sent' })}>
-                    Continue on WhatsApp
+                {ig ? (
+                  <a className="textlink" href={ig} target="_blank" rel="noopener" onClick={() => track('instagram_click', { from: 'sent' })}>
+                    Continue on Instagram
                   </a>
                 ) : null}
                 <button type="button" className="textlink" onClick={onClose}>
@@ -393,9 +390,9 @@ export function EnquirySheet({
               <p className="form-note">
                 {firstName} uses these details only to reply to you. <a href="/privacy">Privacy notice</a>
               </p>
-              {wa ? (
-                <a className="textlink" href={wa} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { from: 'sheet' })}>
-                  Or ask on WhatsApp
+              {ig ? (
+                <a className="textlink" href={ig} target="_blank" rel="noopener" onClick={() => track('instagram_click', { from: 'sheet' })}>
+                  Or ask on Instagram
                 </a>
               ) : null}
             </form>

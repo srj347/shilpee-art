@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useRef, useState, type ReactNod
 import { track, type EnquiryRequest } from '@/lib/enquiry-client'
 import { EnquirySheet } from './EnquirySheet'
 
-export type SheetContact = { whatsapp: string; replyPromise: string; artistName: string }
+export type SheetContact = { instagram: string; replyPromise: string; artistName: string }
 type Ctx = { open: (req: EnquiryRequest) => void; contact: SheetContact }
 type SheetState = { request: EnquiryRequest; nonce: number; open: boolean }
 

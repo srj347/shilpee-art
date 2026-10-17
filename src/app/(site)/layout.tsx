@@ -27,9 +27,9 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
   const settings = await getSettings()
   const { contact, artistName } = settings
   return (
-    <EnquiryProvider contact={{ whatsapp: contact.whatsapp, replyPromise: contact.replyPromise, artistName }}>
+    <EnquiryProvider contact={{ instagram: contact.instagram, replyPromise: contact.replyPromise, artistName }}>
       <a href="#main" className="skip-link">Skip to content</a>
-      <Header name={artistName} contact={contact} />
+      <Header name={artistName} contact={{ email: contact.email, instagram: contact.instagram }} />
       <main id="main">{children}</main>
       <Footer settings={settings} />
       <RevealObserver />

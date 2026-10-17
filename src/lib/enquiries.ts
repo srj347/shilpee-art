@@ -100,7 +100,7 @@ async function mailData(e: any, settings: Settings): Promise<EnquiryMailData> {
     print: e.print?.variantId ? { label: e.print.label, price: formatInr(e.print.priceInr) } : undefined,
     studioUrl: `${env.siteUrl}/admin/enquiries/${e._id}`,
     artistName: settings.artistName,
-    artistWhatsapp: settings.contact.whatsapp,
+    artistInstagram: settings.contact.instagram,
     replyPromise: settings.contact.replyPromise,
   }
 }

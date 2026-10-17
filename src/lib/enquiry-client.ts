@@ -1,4 +1,4 @@
-// Browser-side helpers for enquiries: pre-filled messages and WhatsApp links.
+// Browser-side helpers for enquiries: pre-filled messages.
 import type { ArtImage, EnquiryType } from './types'
 
 export interface EnquiryRequest {
@@ -48,17 +48,6 @@ export function sheetTitle(req: EnquiryRequest): string {
     default:
       return 'Enquire'
   }
-}
-
-export function whatsappLink(number: string, text: string): string {
-  const digits = number.replace(/\D/g, '')
-  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`
-}
-
-export function whatsappText(req: EnquiryRequest, pageUrl: string, artistFirstName = 'Shilpee'): string {
-  if (!req.artwork) return `Hello ${artistFirstName}, `
-  const what = req.print ? `the ${req.print.label} print of ${req.artwork.title}` : `${req.artwork.title} (original, ${req.artwork.size})`
-  return `Hello ${artistFirstName}, I'm interested in ${what}. ${pageUrl}`
 }
 
 /** Fires an analytics event when Umami is present. */

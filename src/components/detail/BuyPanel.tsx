@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useHash } from '@/lib/use-client-store'
 import { useEnquiry } from '@/components/enquiry/EnquiryProvider'
 import { editionLine, formatInr, priceLabel, sizeCm } from '@/lib/format'
-import { track, whatsappLink, whatsappText, type EnquiryRequest } from '@/lib/enquiry-client'
+import { track, type EnquiryRequest } from '@/lib/enquiry-client'
 import { mainImage } from '@/lib/selectors'
 import type { Artwork, PrintVariant, Settings } from '@/lib/types'
 
@@ -49,7 +49,7 @@ export function originalButtonLabel(w: Artwork): string {
 
 const soldOut = (v: PrintVariant) => !!v.editionSize && v.editionsSold >= v.editionSize
 
-export function BuyPanel({ work, settings, pageUrl }: { work: Artwork; settings: Settings; pageUrl: string }) {
+export function BuyPanel({ work, settings }: { work: Artwork; settings: Settings }) {
   const { open, contact } = useEnquiry()
   const variants = work.prints.variants.filter((v) => v.active)
   const hasPrints = work.prints.enabled && variants.length > 0 && work.availability !== 'upcoming'
@@ -75,7 +75,7 @@ export function BuyPanel({ work, settings, pageUrl }: { work: Artwork; settings:
           print: { variantId: variant.id, label: variant.label, priceInr: variant.priceInr },
         }
       : originalRequest(work)
-  const wa = contact.whatsapp ? whatsappLink(contact.whatsapp, whatsappText(req, pageUrl, contact.artistName.split(' ')[0])) : ''
+  const ig = contact.instagram
 
   const originalPanel = (
     <div className="panel" role={hasPrints ? 'tabpanel' : undefined} id="panel-original" aria-labelledby={hasPrints ? 'tab-original' : undefined}>
@@ -93,9 +93,9 @@ export function BuyPanel({ work, settings, pageUrl }: { work: Artwork; settings:
         <button data-primary-enquire type="button" className="btn" onClick={() => open(req)}>
           {originalButtonLabel(work)}
         </button>
-        {wa ? (
-          <a className="textlink" href={wa} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { from: 'detail' })}>
-            Ask on WhatsApp
+        {ig ? (
+          <a className="textlink" href={ig} target="_blank" rel="noopener" onClick={() => track('instagram_click', { from: 'detail' })}>
+            Ask on Instagram
           </a>
         ) : null}
       </div>
@@ -179,9 +179,9 @@ export function BuyPanel({ work, settings, pageUrl }: { work: Artwork; settings:
             <button data-primary-enquire type="button" className="btn" disabled={!variant || soldOut(variant)} onClick={() => open(req)}>
               Enquire about this print
             </button>
-            {wa ? (
-              <a className="textlink" href={wa} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { from: 'prints' })}>
-                Ask on WhatsApp
+            {ig ? (
+              <a className="textlink" href={ig} target="_blank" rel="noopener" onClick={() => track('instagram_click', { from: 'prints' })}>
+                Ask on Instagram
               </a>
             ) : null}
           </div>

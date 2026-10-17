@@ -3,7 +3,7 @@ import { JustifiedRows } from '@/components/art/JustifiedRows'
 import { StatusLine } from '@/components/art/WallLabel'
 import { sizeCm, sizeIn } from '@/lib/format'
 import { mainImage } from '@/lib/selectors'
-import { absolute, artworkJsonLd, jsonLdScript } from '@/lib/seo'
+import { artworkJsonLd, jsonLdScript } from '@/lib/seo'
 import type { Artwork, Settings } from '@/lib/types'
 import { BuyPanel } from './BuyPanel'
 import { CloserStrip, GalleryProvider, GalleryStrip } from './Gallery'
@@ -52,7 +52,8 @@ export function ArtworkDetail({ work, settings, related }: { work: Artwork; sett
                 </div>
               </div>
 
-              <BuyPanel work={work} settings={settings} pageUrl={absolute(`/works/${work.slug}`)} />
+              {/* BuyPanel runs in the browser: keep the WhatsApp number out of the page. */}
+              <BuyPanel work={work} settings={{ ...settings, contact: { ...settings.contact, whatsapp: '' } }} />
 
               {work.availability === 'upcoming' && work.upcoming.studioNote ? (
                 <div className="stack">

@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { ContactForm } from '@/components/enquiry/ContactForm'
 import { CopyButton } from '@/components/site/CopyButton'
 import { getSettings } from '@/lib/data'
-import { formatPhone } from '@/lib/format'
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -13,7 +12,6 @@ export const metadata: Metadata = {
 export default async function ContactPage() {
   const s = await getSettings()
   const first = s.artistName.split(' ')[0]
-  const wa = s.contact.whatsapp.replace(/\D/g, '')
   return (
     <div className="page">
       <section className="container">
@@ -29,12 +27,6 @@ export default async function ContactPage() {
                   <span className="k">Email</span>
                   <a href={`mailto:${s.contact.email}`}>{s.contact.email}</a>
                   <CopyButton text={s.contact.email} />
-                </li>
-              ) : null}
-              {wa ? (
-                <li>
-                  <span className="k">WhatsApp</span>
-                  <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">{formatPhone(wa)}</a>
                 </li>
               ) : null}
               {s.contact.instagram ? (

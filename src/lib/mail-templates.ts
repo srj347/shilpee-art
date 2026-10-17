@@ -1,5 +1,4 @@
 // Plain, readable emails. Every value from a visitor is escaped.
-import { formatPhone } from './format'
 import type { Mail } from './mail'
 
 export function esc(s: string): string {
@@ -39,7 +38,7 @@ export interface EnquiryMailData {
   print?: { label: string; price: string }
   studioUrl: string
   artistName: string
-  artistWhatsapp?: string
+  artistInstagram?: string
   replyPromise: string
 }
 
@@ -102,7 +101,7 @@ export function enquiryToVisitor(d: EnquiryMailData): Mail {
   const summary = d.work
     ? `${d.work.title}, ${d.work.year} · ${d.print ? `Print · ${d.print.label}` : TYPE_LABEL[d.type] === 'original' ? 'Original' : d.work.status} · ${d.work.size}`
     : ''
-  const wa = d.artistWhatsapp ? formatPhone(d.artistWhatsapp) : ''
+  const ig = d.artistInstagram ?? ''
   const text = [
     `Dear ${first},`,
     '',
@@ -112,7 +111,7 @@ export function enquiryToVisitor(d: EnquiryMailData): Mail {
     ...(summary ? [summary] : []),
     `"${d.message}"`,
     '',
-    ...(wa ? [`If it is easier to talk, you can message me on WhatsApp at ${wa}.`, ''] : []),
+    ...(ig ? [`If it is easier to talk, you can message me on Instagram: ${ig}`, ''] : []),
     'Warmly,',
     artistFirst,
     '',
@@ -124,7 +123,7 @@ export function enquiryToVisitor(d: EnquiryMailData): Mail {
 <p>Thank you for writing to me${d.work ? ` about <em style="font-family:Georgia,serif">${esc(d.work.title)}</em>` : ''}. I read every message myself, and I will reply ${esc(d.replyPromise)}, usually sooner.</p>
 <p>This is what you sent:</p>
 <blockquote style="margin:0 0 20px;padding-left:14px;border-left:2px solid #dededa;font-family:Georgia,serif;white-space:pre-wrap">${summary ? `${esc(summary)}<br>` : ''}“${esc(d.message)}”</blockquote>
-${wa ? `<p>If it is easier to talk, you can message me on WhatsApp at ${esc(wa)}.</p>` : ''}
+${ig ? `<p>If it is easier to talk, you can message me on <a href="${esc(ig)}">Instagram</a>.</p>` : ''}
 <p>Warmly,</p>
 <p style="font-family:Georgia,serif;font-style:italic;font-size:24px;margin:0 0 24px">${esc(artistFirst)}</p>
 <p style="color:#5f5f5b;font-size:12px;border-top:1px solid #dededa;padding-top:12px">${esc(d.artistName)} · Studio in Hyderabad, India<br>Your reference: ${esc(d.ref)}. You get this email because you sent a message on my website. You are not on any mailing list.</p>`)
